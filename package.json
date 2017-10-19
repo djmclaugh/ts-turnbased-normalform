@@ -1,0 +1,31 @@
+{
+  "name": "ts-turnbased-normalform",
+  "version": "0.0.1",
+  "description": "Typescript implementation of normal-form games. (https://en.wikipedia.org/wiki/Normal-form_game)",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "tsc",
+    "test": "mocha --recursive ./test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djmclaugh/ts-turnbased-normalform.git"
+  },
+  "author": "djmclaugh",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/djmclaugh/ts-turnbased-normalform/issues"
+  },
+  "homepage": "https://github.com/djmclaugh/ts-turnbased-normalform#readme",
+  "dependencies": {
+    "ts-turnbased": "0.0.3"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.15",
+    "chai": "^3.5.0",
+    "mocha": "^3.3.0",
+    "typescript": "^2.3.2"
+  }
+}
