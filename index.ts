@@ -1,4 +1,4 @@
-import { Game, IllegalMoveError, InvalidMoveError, InvalidOptionsError, Update } from "ts-turnbased";
+import { Game, IllegalMoveError, InvalidMoveError, InvalidOptionsError, PublicUpdate } from "ts-turnbased";
 
 // A payoff tensor is a multidimensional array that contains the payouts for each player for every
 // situation.
@@ -31,7 +31,6 @@ export function sanitizeOptions(options: any): NormalFormOptions {
   if (!Array.isArray(options.payoffTensor)) {
     throw new InvalidOptionsError(options, "Payoffs must be defined as a multidimensional array");
   }
-  let numberOfPlayers: number = options.numPlayers;
   if (typeof options.numRounds != "number" || options.numRounds < 0) {
     throw new InvalidOptionsError(options, "numRounds must be a non-negative number");
   }
@@ -43,25 +42,31 @@ export function sanitizeOptions(options: any): NormalFormOptions {
 
 // https://en.wikipedia.org/wiki/Normal-form_game
 // Technically speaking, this is the iterative verison of normal form games.
-export class NormalFormGame extends Game {
+export class NormalFormGame extends Game<NormalFormOptions, number, Array<number>, null> {
   private scores: Array<number>
   private currentTurn: number;
-  private cachedWinners: Set<number>;
-  protected options: NormalFormOptions
-
 
   constructor(options: NormalFormOptions) {
     super(options);
   }
 
-  protected initialize(seed: string): Update {
+  protected numberOfPlayersForOptions(options: NormalFormOptions): number {
+    return getNumberOfPlayers(options.payoffTensor);
+  }
+
+  protected initialize(seed: string): PublicUpdate<Array<number>> {
     this.scores = [];
     let numPlayers: number = getNumberOfPlayers(this.options.payoffTensor);
+    let toPlay: Array<number> = [];
     for (let i = 0; i < numPlayers; ++i) {
       this.scores.push(0);
+      toPlay.push(i);
     }
     this.currentTurn = 0;
-    return null;
+    return {
+      publicInfo: null,
+      toPlay: toPlay
+    };
   }
 
   protected sanitizeOptions(options: any): NormalFormOptions {
@@ -93,7 +98,7 @@ export class NormalFormGame extends Game {
     }
   }
 
-  protected processTurn(moves: Map<number, number>): Update {
+  protected processTurn(moves: Map<number, number>): PublicUpdate<Array<number>> {
     let currentTensor: Array<any> = this.options.payoffTensor;
     let movesArray: Array<number> = [];
     for (let i = 0; i < this.scores.length; ++i) {
@@ -104,37 +109,28 @@ export class NormalFormGame extends Game {
       this.scores[i] += currentTensor[i];
     }
     this.currentTurn += 1;
-    return {publicInfo: movesArray};
+    return {
+      publicInfo: movesArray,
+      toPlay: this.currentTurn == this.options.numRounds ? [] : this.getLatestUpdate().toPlay.concat()
+    };
   }
 
-  getPlayersToPlay(): Set<number> {
-    let players: Set<number> = new Set<number>();
-    if (this.currentTurn < this.options.numRounds) {
-      for (let i = 0; i < this.scores.length; ++i) {
-        players.add(i);
-      }
-    }
-    return players;
-  }
-
-  getWinners(): Set<number> {
+  getWinners(): Array<number> {
     if (this.currentTurn == this.options.numRounds) {
-      if (!this.cachedWinners) {
-        this.cachedWinners = new Set<number>();
-        let bestScore: number = this.scores[0];
-        for (let i = 0; i < this.scores.length; ++i) {
-          if (this.scores[i] > bestScore) {
-            bestScore = this.scores[i];
-            this.cachedWinners.clear();
-          }
-          if (this.scores[i] == bestScore) {
-            this.cachedWinners.add(i);
-          }
+      let winners: Array<number> = [];
+      let bestScore: number = this.scores[0];
+      for (let i = 0; i < this.scores.length; ++i) {
+        if (this.scores[i] > bestScore) {
+          bestScore = this.scores[i];
+          winners = [];
+        }
+        if (this.scores[i] == bestScore) {
+          winners.push(i);
         }
       }
-      return this.cachedWinners;
+      return winners;
     }
-    return null;
+    return [];
   }
 }
 

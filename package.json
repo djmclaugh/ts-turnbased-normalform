@@ -1,6 +1,6 @@
 {
   "name": "ts-turnbased-normalform",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Typescript implementation of normal-form games. (https://en.wikipedia.org/wiki/Normal-form_game)",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/djmclaugh/ts-turnbased-normalform#readme",
   "dependencies": {
-    "ts-turnbased": "0.0.3"
+    "ts-turnbased": "0.0.5"
   },
   "devDependencies": {
     "@types/chai": "^3.5.2",
